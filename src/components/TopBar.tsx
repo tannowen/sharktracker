@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SignInButton, UserButton, useUser, Show } from "@clerk/nextjs";
+import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import { Sparkles, Lock, History, Heart, Waves } from "lucide-react";
 
 // ─── Clerk UserButton appearance override ────────────────────────────────────
@@ -28,26 +28,44 @@ const userButtonAppearance = {
   },
 };
 
-// ─── Welcome greeting shown when signed in ────────────────────────────────────
-function WelcomeGreeting() {
-  const { user } = useUser();
-  const name = user?.firstName ?? "Diver";
-  return (
-    <span className="text-xs font-mono flex items-center gap-1.5">
-      <Waves className="w-3 h-3 text-cyan-400/70" />
-      <span className="text-slate-500">Welcome back,</span>
-      <span
-        className="font-semibold"
-        style={{
-          background: "linear-gradient(90deg, #00e5ff, #14f5d8)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-        }}
-      >
-        {name}
-      </span>
-    </span>
-  );
+// ─── Auth zone — client-side conditional rendering via useUser() ─────────────
+// <Show> is a server component and cannot be used inside a "use client" file.
+// useUser() provides isLoaded + isSignedIn for safe client-side branching.
+function AuthZone() {
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  // Skeleton while Clerk hydrates
+  if (!isLoaded) {
+    return (
+      <div className="w-24 h-7 rounded-lg animate-pulse" style={{ background: "rgba(255,255,255,0.05)" }} />
+    );
+  }
+
+  if (isSignedIn) {
+    const name = user?.firstName ?? "Diver";
+    return (
+      <>
+        <span className="text-xs font-mono flex items-center gap-1.5">
+          <Waves className="w-3 h-3 text-cyan-400/70" />
+          <span className="text-slate-500">Welcome back,</span>
+          <span
+            className="font-semibold"
+            style={{
+              background: "linear-gradient(90deg, #00e5ff, #14f5d8)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            {name}
+          </span>
+        </span>
+        <div className="w-px h-4 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }} />
+        <UserButton appearance={userButtonAppearance} />
+      </>
+    );
+  }
+
+  return <SignInTrigger />;
 }
 
 // ─── Sign-in trigger — custom-styled to match the oceanic theme ──────────────
@@ -183,18 +201,7 @@ export default function TopBar() {
 
       {/* Auth zone */}
       <div className="glass rounded-xl px-3 py-2 flex items-center gap-3">
-        <Show when="signed-in">
-          <WelcomeGreeting />
-          <div
-            className="w-px h-4 rounded-full"
-            style={{ background: "rgba(255,255,255,0.08)" }}
-          />
-          <UserButton appearance={userButtonAppearance} />
-        </Show>
-
-        <Show when="signed-out">
-          <SignInTrigger />
-        </Show>
+        <AuthZone />
       </div>
     </header>
   );
