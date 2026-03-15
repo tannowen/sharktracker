@@ -1,26 +1,186 @@
 @import "tailwindcss";
 
+@theme {
+  /* Ocean depth color palette */
+  --color-ocean-950: #020810;
+  --color-ocean-900: #050d1a;
+  --color-ocean-800: #0a1128;
+  --color-ocean-750: #0d1535;
+  --color-ocean-700: #111d42;
+  --color-ocean-600: #162352;
+
+  /* Bioluminescent accents */
+  --color-cyan-glow: #00e5ff;
+  --color-teal-glow: #14f5d8;
+  --color-electric: #4d9fff;
+  --color-apex: #00e5ff;
+
+  /* Semantic status colors */
+  --color-status-active: #00e5ff;
+  --color-status-resting: #2dd4bf;
+  --color-status-deep: #6366f1;
+  --color-status-unknown: #64748b;
+
+  /* Fonts */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "Roboto Mono", monospace;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050d1a;
+  --foreground: #e2e8f0;
+  --glass-bg: rgba(10, 17, 40, 0.65);
+  --glass-border: rgba(0, 229, 255, 0.12);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Leaflet map dark override */
+.leaflet-container {
+  background: #020810 !important;
+}
+
+.leaflet-tile-pane {
+  filter: brightness(0.9) saturate(0.8);
+}
+
+/* Glass panel utility */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.2);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.4);
+}
+
+/* Pulsing ping animation for map markers */
+@keyframes ping-outer {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes ping-middle {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes float-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.7), 0 0 40px rgba(0, 229, 255, 0.2);
+  }
+}
+
+@keyframes scan-line {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.animate-float-up {
+  animation: float-up 0.4s ease-out forwards;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+/* Leaflet popup dark override */
+.leaflet-popup-content-wrapper {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+.leaflet-popup-tip {
+  background: rgba(10, 17, 40, 0.8) !important;
+}
+.leaflet-popup-close-button {
+  color: #64748b !important;
+}
+.leaflet-popup-close-button:hover {
+  color: #00e5ff !important;
+}
+
+/* Leaflet attribution */
+.leaflet-control-attribution {
+  background: rgba(5, 13, 26, 0.7) !important;
+  color: #334155 !important;
+  font-size: 9px !important;
+}
+.leaflet-control-attribution a {
+  color: #475569 !important;
+}
+
+/* Leaflet zoom controls */
+.leaflet-control-zoom a {
+  background: var(--glass-bg) !important;
+  color: #94a3b8 !important;
+  border-color: var(--glass-border) !important;
+  backdrop-filter: blur(10px) !important;
+}
+.leaflet-control-zoom a:hover {
+  background: rgba(0, 229, 255, 0.15) !important;
+  color: #00e5ff !important;
 }
