@@ -204,7 +204,7 @@ export default function MapComponent({
 function ZoomControlPositioned() {
   const map = useMap();
   useEffect(() => {
-    L.control.zoom({ position: "bottomright" }).addTo(map);
+    L.control.zoom({ position: "bottomleft" }).addTo(map);
   }, [map]);
   return null;
 }
