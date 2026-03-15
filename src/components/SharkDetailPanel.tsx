@@ -245,7 +245,10 @@ export default function SharkDetailPanel({ shark, onClose }: SharkDetailPanelPro
               >
                 {shark.name}
               </h2>
-              <p className="text-slate-400 text-[11px] italic">{shark.species}</p>
+              <p className="text-slate-200 text-sm font-medium leading-tight">
+                {shark.commonName}
+              </p>
+              <p className="text-slate-500 text-[10px] italic mt-0.5">{shark.species}</p>
             </div>
           </div>
 

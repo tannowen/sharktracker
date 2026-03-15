@@ -55,7 +55,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "Central Pacific",
     avatarColor: "#00e5ff",
     avatarInitial: "L",
-    imageUrl: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/2105912/pexels-photo-2105912.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Tagged in 2021 off Guadalupe Island. Has completed two full Pacific crossings and holds the ApexTracker annual distance record at 4,820 km.",
     lastPing: { lat: 24.5, lng: -142.8, depth: 12, timestamp: "2026-03-15T14:32:00Z" },
@@ -83,7 +83,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "South Pacific",
     avatarColor: "#6366f1",
     avatarInitial: "T",
-    imageUrl: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/5967796/pexels-photo-5967796.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "One of the largest individuals in our database. Recently dove to 382 m near the Clarion–Clipperton zone — a new personal depth record.",
     lastPing: { lat: -18.3, lng: -130.5, depth: 380, timestamp: "2026-03-15T13:58:00Z" },
@@ -110,7 +110,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "South Africa",
     avatarColor: "#4d9fff",
     avatarInitial: "A",
-    imageUrl: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/2747248/pexels-photo-2747248.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Photographed by researchers at Gansbaai in 2024. A distinctive crescent-shaped scar on the dorsal fin is used for photo-ID across datasets.",
     lastPing: { lat: -34.1, lng: 26.8,  depth: 9,  timestamp: "2026-03-15T14:55:00Z" },
@@ -139,7 +139,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "Hawaiian Islands",
     avatarColor: "#14f5d8",
     avatarInitial: "N",
-    imageUrl: "https://images.unsplash.com/photo-1559827291-72a8c31d4485?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/1697620/pexels-photo-1697620.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Known to frequent recreational dive sites near Maui. Nova is listed in three separate university research programmes and is the most-studied shark in our database.",
     lastPing: { lat: 20.8, lng: -156.3, depth: 6,  timestamp: "2026-03-15T14:45:00Z" },
@@ -168,7 +168,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "Florida Straits",
     avatarColor: "#2dd4bf",
     avatarInitial: "O",
-    imageUrl: "https://images.unsplash.com/photo-1583396618422-38b67a7a6a4e?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/67854/shark-fish-hammerhead-shark-aquarium-67854.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Discovered entangled in monofilament gear near the Dry Tortugas in 2022. Successfully freed and re-tagged by the ApexTracker field team.",
     lastPing: { lat: 24.9, lng: -80.1, depth: 35, timestamp: "2026-03-15T12:10:00Z" },
@@ -197,7 +197,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "North Atlantic",
     avatarColor: "#64748b",
     avatarInitial: "S",
-    imageUrl: "https://images.unsplash.com/photo-1547025688-afc91427e3be?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/4166312/pexels-photo-4166312.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Signal lost for 16 consecutive days in February. Likely undertook a rapid open-ocean sprint — Makos are the fastest sharks on Earth at 74 km/h.",
     lastPing: { lat: 42.0, lng: -52.5, depth: 0, timestamp: "2026-03-14T22:18:00Z" },
@@ -224,7 +224,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "Gulf of Mexico",
     avatarColor: "#ef4444",
     avatarInitial: "P",
-    imageUrl: "https://images.unsplash.com/photo-1580019542155-247062e19ce4?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/5135160/pexels-photo-5135160.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Primarily hunts the oil-rig ecosystems in the northern Gulf. Bull sharks are the only species capable of surviving indefinitely in both fresh and salt water.",
     lastPing: { lat: 25.4, lng: -90.2, depth: 8, timestamp: "2026-03-15T15:01:00Z" },
@@ -253,7 +253,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "North Pacific",
     avatarColor: "#60a5fa",
     avatarInitial: "C",
-    imageUrl: "https://images.unsplash.com/photo-1511715112108-9acc32ec5a3e?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/2170473/pexels-photo-2170473.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Blue sharks regularly migrate 9,000+ km across ocean basins. Celeste was first tagged in the Azores and tracked all the way to California.",
     lastPing: { lat: 38.2, lng: -155.4, depth: 180, timestamp: "2026-03-15T13:20:00Z" },
@@ -282,7 +282,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "Indian Ocean",
     avatarColor: "#a78bfa",
     avatarInitial: "G",
-    imageUrl: "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/7905791/pexels-photo-7905791.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "The world's largest fish. A filter feeder and completely harmless to humans. Goliath's tag is attached near the first dorsal fin using a titanium dart.",
     lastPing: { lat: -4.8, lng: 72.3, depth: 22, timestamp: "2026-03-15T11:05:00Z" },
@@ -311,7 +311,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "Maldives",
     avatarColor: "#34d399",
     avatarInitial: "R",
-    imageUrl: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/3311083/pexels-photo-3311083.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "This individual has occupied the same reef system for 4 consecutive years, demonstrating strong site fidelity. Popular with local dive operators.",
     lastPing: { lat: 4.2, lng: 73.5, depth: 3, timestamp: "2026-03-15T14:58:00Z" },
@@ -340,7 +340,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "Red Sea",
     avatarColor: "#818cf8",
     avatarInitial: "I",
-    imageUrl: "https://images.unsplash.com/photo-1562329265-95a6d7a83440?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/6530412/pexels-photo-6530412.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Oceanic Whitetips were once among the most abundant pelagic sharks. Now Critically Endangered — every tagged individual represents vital population data.",
     lastPing: { lat: 22.1, lng: 37.4, depth: 45, timestamp: "2026-03-15T14:22:00Z" },
@@ -369,7 +369,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "Bahamas",
     avatarColor: "#fbbf24",
     avatarInitial: "E",
-    imageUrl: "https://images.unsplash.com/photo-1550317138-10000687a72b?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/4438343/pexels-photo-4438343.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Studies at Bimini Biological Field Station show lemon sharks can recognise individual researchers by sight. Echo has approached the research zodiac three times unprompted.",
     lastPing: { lat: 25.7, lng: -77.4, depth: 12, timestamp: "2026-03-15T10:15:00Z" },
@@ -398,7 +398,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "Mediterranean Sea",
     avatarColor: "#3b82f6",
     avatarInitial: "A",
-    imageUrl: "https://images.unsplash.com/photo-1563685976-cf22eac4e12f?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/4781934/pexels-photo-4781934.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Thresher sharks use their elongated upper tail lobe to stun schooling fish — a behaviour rarely captured on film. Abyss is the subject of an active tail-strike behavioural study.",
     lastPing: { lat: 36.2, lng: 14.1, depth: 450, timestamp: "2026-03-15T13:40:00Z" },
@@ -427,7 +427,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "Coral Sea",
     avatarColor: "#94a3b8",
     avatarInitial: "S",
-    imageUrl: "https://images.unsplash.com/photo-1548438294-1ad5d5f4f063?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/5199173/pexels-photo-5199173.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Silky sharks are highly migratory along tuna fishing routes, making them extremely vulnerable to bycatch. Sable has been caught and released twice since tagging.",
     lastPing: { lat: -18.4, lng: 152.2, depth: 30, timestamp: "2026-03-15T14:10:00Z" },
@@ -456,7 +456,7 @@ export const MOCK_SHARKS: Shark[] = [
     region: "East Coast USA",
     avatarColor: "#f87171",
     avatarInitial: "F",
-    imageUrl: "https://images.unsplash.com/photo-1574482620811-1aa16ffe3c82?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/8910272/pexels-photo-8910272.jpeg?auto=compress&cs=tinysrgb&w=800",
     notes:
       "Sand tigers are the only sharks known to gulp air to maintain neutral buoyancy. Despite their fearsome appearance — multiple rows of protruding teeth — they are remarkably docile around divers.",
     lastPing: { lat: 35.1, lng: -75.6, depth: 18, timestamp: "2026-03-15T09:30:00Z" },
