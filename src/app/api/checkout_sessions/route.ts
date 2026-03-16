@@ -12,11 +12,16 @@ export async function POST() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   if (!process.env.STRIPE_SECRET_KEY) {
-    // Return a dev-friendly error rather than throwing, so the UI can surface it
     return NextResponse.json(
       { error: "STRIPE_SECRET_KEY is not configured. Add it to .env.local to enable checkout." },
       { status: 503 }
     );
+  }
+
+  // Organization API keys require stripeContext specifying the target account.
+  const requestOptions: Stripe.RequestOptions = {};
+  if (process.env.STRIPE_ACCOUNT_ID) {
+    requestOptions.stripeContext = process.env.STRIPE_ACCOUNT_ID;
   }
 
   try {
@@ -45,7 +50,7 @@ export async function POST() {
       metadata: {
         source: "apex_tracker_pro_unlock",
       },
-    });
+    }, requestOptions);
 
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (err) {
