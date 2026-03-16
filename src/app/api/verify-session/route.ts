@@ -20,10 +20,11 @@ export async function GET(req: Request) {
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {}, requestOptions);
+    // payment_status is "no_payment_required" during free trials, "paid" otherwise
     const isPremium =
       session.status === "complete" &&
       session.mode === "subscription" &&
-      session.payment_status === "paid";
+      (session.payment_status === "paid" || session.payment_status === "no_payment_required");
 
     return NextResponse.json({ isPremium, email: session.customer_details?.email });
   } catch (err) {
