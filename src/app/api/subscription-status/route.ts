@@ -33,15 +33,23 @@ export async function GET() {
     }
 
     const subscriptions = await stripe.subscriptions.list(
-      { customer: customers.data[0].id, status: "all", limit: 10 },
+      { customer: customers.data[0].id, status: "all", limit: 10, expand: ["data.items.data.price.product"] },
       requestOptions
     );
 
-    const isPremium = subscriptions.data.some(
-      (sub) =>
-        (sub.status === "active" || sub.status === "trialing") &&
-        sub.metadata?.type === "pro"
-    );
+    const isPremium = subscriptions.data.some((sub) => {
+      if (sub.status !== "active" && sub.status !== "trialing") return false;
+      // Metadata set on subscription (new checkouts)
+      if (sub.metadata?.type === "pro") return true;
+      // Fallback: check product name (catches existing subscriptions)
+      return sub.items.data.some((item) => {
+        const product = item.price.product;
+        if (typeof product === "object" && product !== null && "name" in product) {
+          return (product as { name: string }).name.toLowerCase().includes("shark finder pro");
+        }
+        return false;
+      });
+    });
 
     return NextResponse.json({ isPremium });
   } catch (err) {

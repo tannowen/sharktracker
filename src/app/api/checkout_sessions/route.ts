@@ -71,7 +71,10 @@ export async function POST(req: Request) {
           },
           quantity: 1,
         }],
-        subscription_data: { trial_period_days: 3 },
+        subscription_data: {
+          trial_period_days: 3,
+          metadata: { type: "pro" },
+        },
         allow_promotion_codes: true,
         success_url: `${appUrl}/?upgrade=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${appUrl}/`,
