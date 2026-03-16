@@ -16,44 +16,59 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-function createPingIcon(color: string, isSelected: boolean): L.DivIcon {
-  const size = isSelected ? 18 : 12;
-  const pulseSize = isSelected ? 48 : 36;
+function createPingIcon(color: string, isSelected: boolean, status: string): L.DivIcon {
+  if (isSelected) {
+    // Selected: larger dot + one slow pulse ring
+    return L.divIcon({
+      className: "",
+      html: `
+        <div style="position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">
+          <div style="
+            position:absolute;
+            width:40px;height:40px;
+            border-radius:50%;
+            background:${color};
+            opacity:0;
+            animation:ping-outer 2.5s cubic-bezier(0,0,0.2,1) infinite;
+          "></div>
+          <div style="
+            width:16px;height:16px;
+            border-radius:50%;
+            background:${color};
+            border:2.5px solid rgba(255,255,255,0.9);
+            box-shadow:0 0 16px ${color}, 0 0 6px ${color};
+            position:relative;z-index:1;
+          "></div>
+        </div>
+      `,
+      iconSize: [48, 48],
+      iconAnchor: [24, 24],
+      popupAnchor: [0, -28],
+    });
+  }
+
+  // Unselected: static dot, no animation
+  // Active sharks get a faint glow; resting/unknown get a dimmer dot
+  const dim = status === "unknown" ? "0.45" : status === "resting" ? "0.65" : "1";
+  const dotSize = 8;
+  const wrap = 20;
 
   return L.divIcon({
     className: "",
     html: `
-      <div style="position:relative;width:${pulseSize}px;height:${pulseSize}px;display:flex;align-items:center;justify-content:center;">
+      <div style="width:${wrap}px;height:${wrap}px;display:flex;align-items:center;justify-content:center;">
         <div style="
-          position:absolute;
-          width:${size * 2.5}px;height:${size * 2.5}px;
+          width:${dotSize}px;height:${dotSize}px;
           border-radius:50%;
           background:${color};
-          opacity:0;
-          animation:ping-outer 2s cubic-bezier(0,0,0.2,1) infinite;
-        "></div>
-        <div style="
-          position:absolute;
-          width:${size * 1.8}px;height:${size * 1.8}px;
-          border-radius:50%;
-          background:${color};
-          opacity:0;
-          animation:ping-middle 2s cubic-bezier(0,0,0.2,1) infinite 0.3s;
-        "></div>
-        <div style="
-          width:${size}px;height:${size}px;
-          border-radius:50%;
-          background:${color};
-          border:${isSelected ? "3px" : "2px"} solid white;
-          box-shadow:0 0 ${isSelected ? "20px" : "10px"} ${color};
-          position:relative;
-          z-index:1;
+          opacity:${dim};
+          box-shadow:0 0 6px ${color};
         "></div>
       </div>
     `,
-    iconSize: [pulseSize, pulseSize],
-    iconAnchor: [pulseSize / 2, pulseSize / 2],
-    popupAnchor: [0, -(pulseSize / 2 + 4)],
+    iconSize: [wrap, wrap],
+    iconAnchor: [wrap / 2, wrap / 2],
+    popupAnchor: [0, -(wrap / 2 + 4)],
   });
 }
 
@@ -118,7 +133,7 @@ export default function MapComponent({
           <Marker
             key={shark.id}
             position={[shark.lastPing.lat, shark.lastPing.lng]}
-            icon={createPingIcon(color, isSelected)}
+            icon={createPingIcon(color, isSelected, shark.status)}
             eventHandlers={{ click: () => onSharkSelect(shark) }}
           >
             <Popup>
