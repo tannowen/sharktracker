@@ -16,7 +16,7 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ApexTracker — Live Shark Intelligence",
+  title: "Shark Finder — Live Shark Tracking",
   description:
     "Real-time tracking of great white sharks and marine apex predators. Live pings, dive depth telemetry, and migration intelligence.",
   keywords: ["shark tracking", "marine life", "great white shark", "ocean telemetry"],

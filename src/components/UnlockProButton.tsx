@@ -11,7 +11,7 @@ void (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
   : Promise.resolve(null));
 
-export default function UnlockProButton() {
+export default function UnlockProButton({ fullWidth = false }: { fullWidth?: boolean }) {
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -46,7 +46,7 @@ export default function UnlockProButton() {
       <button
         onClick={handleUnlock}
         disabled={status === "loading"}
-        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 relative overflow-hidden group disabled:cursor-not-allowed"
+        className={`${fullWidth ? "w-full" : ""} flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold transition-all duration-300 relative overflow-hidden group disabled:cursor-not-allowed`}
         style={{
           background:
             status === "loading"

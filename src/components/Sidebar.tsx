@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import {
-  Radio, Wifi, ChevronRight, Fish, Ruler, Weight, Clock,
+  Radio, Wifi, ChevronRight, Ruler, Weight, Clock,
   MapPin, Tag, History, Lock, Route, Calendar, Navigation,
   X, Search, AlertTriangle,
 } from "lucide-react";
@@ -157,50 +157,50 @@ function SharkCardSkeleton() {
 }
 
 // ─── Historical Routes section ────────────────────────────────────────────────
-function RouteCard({ route }: { route: (typeof MOCK_ROUTES)[number] }) {
+function HistoricalRoutesSection({ isPremium }: { isPremium: boolean }) {
+  if (isPremium) return null; // unlocked users see routes inline in the list
+
   return (
-    <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
-      <div className="flex items-start gap-2.5">
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: `${route.color}15`, border: `1px solid ${route.color}30` }}>
-          <Route className="w-3.5 h-3.5" style={{ color: route.color }} />
+    <div className="mx-3 mb-3 rounded-2xl overflow-hidden relative" style={{
+      background: "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(0,229,255,0.04))",
+      border: "1px solid rgba(99,102,241,0.3)",
+      boxShadow: "0 0 24px rgba(99,102,241,0.1), inset 0 1px 0 rgba(255,255,255,0.04)",
+    }}>
+      {/* Glow accent top-right */}
+      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)" }} />
+
+      {/* Blurred route preview */}
+      <div className="px-3 pt-3 pb-1 space-y-1.5 blur-[2px] opacity-40 pointer-events-none select-none">
+        {MOCK_ROUTES.map((r) => (
+          <div key={r.id} className="flex items-center gap-2 rounded-lg px-2.5 py-2" style={{ background: "rgba(255,255,255,0.03)" }}>
+            <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: `${r.color}20` }}>
+              <Route className="w-2.5 h-2.5" style={{ color: r.color }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-slate-300 text-[11px] font-semibold truncate">{r.name}</p>
+              <p className="text-slate-600 text-[9px] font-mono">{r.distanceKm.toLocaleString()} km · {r.durationDays}d</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Lock overlay */}
+      <div className="px-4 py-3 flex items-center gap-3 relative" style={{ background: "linear-gradient(to top, rgba(5,13,26,0.85), rgba(5,13,26,0.5))" }}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.25), rgba(0,229,255,0.1))", border: "1px solid rgba(99,102,241,0.4)" }}>
+          <Lock className="w-4 h-4 text-indigo-400" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-slate-300 text-xs font-semibold truncate">{route.name}</p>
-          <p className="text-slate-600 text-[10px] italic mb-2">{route.sharkName}</p>
-          <div className="flex items-center gap-3 text-[10px] font-mono text-slate-600">
-            <span className="flex items-center gap-1"><Navigation className="w-2.5 h-2.5" />{route.distanceKm.toLocaleString()} km</span>
-            <span className="flex items-center gap-1"><Calendar className="w-2.5 h-2.5" />{route.durationDays}d · {route.year}</span>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <p className="text-slate-100 text-xs font-bold">Migration Routes</p>
+            <span className="text-[9px] uppercase tracking-wider font-mono px-1.5 py-0.5 rounded-md" style={{ background: "rgba(99,102,241,0.2)", border: "1px solid rgba(99,102,241,0.35)", color: "#818cf8" }}>Pro</span>
           </div>
+          <p className="text-slate-500 text-[10px] leading-snug">Full historical paths, depth & time overlays</p>
         </div>
       </div>
-    </div>
-  );
-}
 
-function HistoricalRoutesSection({ isPremium }: { isPremium: boolean }) {
-  return (
-    <div className="mt-1">
-      <div className="px-4 mb-2 flex items-center gap-2">
-        <History className="w-3 h-3 text-indigo-400" />
-        <span className="text-[10px] uppercase tracking-widest text-slate-600 font-mono flex-1">Migration Routes</span>
-        {!isPremium && (
-          <span className="text-[9px] uppercase tracking-wider font-mono px-1.5 py-0.5 rounded-md" style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.25)", color: "#818cf8" }}>Pro</span>
-        )}
-      </div>
-      <div className="px-3 relative">
-        <div className={`space-y-2 transition-all duration-300 ${!isPremium ? "blur-[3px] opacity-50 pointer-events-none select-none" : ""}`}>
-          {MOCK_ROUTES.map((r) => <RouteCard key={r.id} route={r} />)}
-        </div>
-        {!isPremium && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl px-4" style={{ background: "linear-gradient(to bottom, rgba(5,13,26,0.15), rgba(5,13,26,0.75), rgba(5,13,26,0.15))" }}>
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-3" style={{ background: "linear-gradient(135deg, rgba(0,229,255,0.15), rgba(77,159,255,0.1))", border: "1px solid rgba(0,229,255,0.25)" }}>
-              <Lock className="w-[18px] h-[18px] text-cyan-400" />
-            </div>
-            <p className="text-slate-200 text-xs font-bold mb-1 text-center">Premium Feature</p>
-            <p className="text-slate-600 text-[10px] text-center mb-4 leading-relaxed">Visualise full migration paths with depth & time overlays</p>
-            <UnlockProButton />
-          </div>
-        )}
+      {/* CTA button */}
+      <div className="px-3 pb-3">
+        <UnlockProButton fullWidth />
       </div>
     </div>
   );
@@ -255,7 +255,11 @@ function SidebarContent({
       <div className="flex-shrink-0 p-4">
         <div className={`flex items-center gap-3 ${isCollapsed && !isMobileDrawer ? "justify-center" : ""}`}>
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 relative" style={{ background: "linear-gradient(135deg, #00e5ff20, #00e5ff10)", border: "1px solid rgba(0,229,255,0.3)" }}>
-            <Fish className="w-5 h-5" style={{ color: "#00e5ff" }} />
+            {/* Shark SVG icon */}
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" style={{ color: "#00e5ff" }}>
+              <path d="M2 12 C4 7, 9 5, 13 7 L20 4 L17 9 C19 10, 20 12, 19 14 C17 18, 11 18, 8 16 L5 19 L6 14 C4 13, 2 13, 2 12Z" fill="currentColor" fillOpacity="0.9"/>
+              <circle cx="15" cy="9.5" r="0.8" fill="rgba(2,8,16,0.8)"/>
+            </svg>
             <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400 animate-pulse" style={{ animationDuration: "1.5s" }} />
           </div>
 
@@ -263,7 +267,7 @@ function SidebarContent({
             <>
               <div className="flex-1 min-w-0">
                 <h1 className="text-base font-bold tracking-tight truncate" style={{ background: "linear-gradient(90deg, #00e5ff, #14f5d8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                  ApexTracker
+                  Shark Finder
                 </h1>
                 <p className="text-[10px] text-slate-600 uppercase tracking-widest font-mono">Live Tracking</p>
               </div>
@@ -333,6 +337,9 @@ function SidebarContent({
               />
             </div>
           </div>
+
+          {/* ── Migration Routes upgrade card (non-premium only) ── */}
+          <HistoricalRoutesSection isPremium={isPremium} />
 
           {/* Scrollable list */}
           <div className="flex-1 overflow-y-auto custom-scrollbar pb-2">
@@ -407,8 +414,6 @@ function SidebarContent({
               )}
             </div>
 
-            <div className="mx-4 mb-4 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
-            <HistoricalRoutesSection isPremium={isPremium} />
             <div className="h-3" />
           </div>
 

@@ -28,7 +28,7 @@ export async function POST() {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "ApexTracker Pro",
+              name: "Shark Finder Pro",
               description:
                 "Unlock historical migration routes, deep-dive analytics, unlimited shark tracking, and early access to new features.",
               images: [],
