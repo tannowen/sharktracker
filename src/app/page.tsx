@@ -2,16 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Menu } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 import type { Shark, SharkPing } from "@/data/sharks";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import DynamicMap from "@/components/DynamicMap";
 import SharkDetailPanel from "@/components/SharkDetailPanel";
 
-// Toggle to `true` to preview unlocked Historical Routes.
-const IS_PREMIUM_PREVIEW = false;
-
 export default function DashboardPage() {
+  const { isSignedIn } = useUser();
   const [sharks, setSharks]               = useState<Shark[]>([]);
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState<string | null>(null);
@@ -20,6 +19,7 @@ export default function DashboardPage() {
   const [pingsLoading, setPingsLoading]   = useState(false);
   const [activeOnly, setActiveOnly]       = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isPremium, setIsPremium]         = useState(false);
 
   const displayedSharks = activeOnly
     ? sharks.filter((s) => s.status === "active")
@@ -38,6 +38,15 @@ export default function DashboardPage() {
       )
       .finally(() => setLoading(false));
   }, []);
+
+  // Check subscription status whenever auth state changes
+  useEffect(() => {
+    if (!isSignedIn) { setIsPremium(false); return; }
+    fetch("/api/subscription-status")
+      .then((r) => r.json())
+      .then((d: { isPremium?: boolean }) => setIsPremium(d.isPremium ?? false))
+      .catch(() => setIsPremium(false));
+  }, [isSignedIn]);
 
   // Lazy-load pings when a shark is selected
   const loadPings = useCallback(async (shark: Shark) => {
@@ -103,7 +112,7 @@ export default function DashboardPage() {
         error={error}
         selectedShark={selectedShark}
         onSharkSelect={handleSharkSelect}
-        isPremium={IS_PREMIUM_PREVIEW}
+        isPremium={isPremium}
         activeOnly={activeOnly}
         onActiveOnlyChange={setActiveOnly}
         mobileOpen={mobileSidebarOpen}
@@ -115,7 +124,7 @@ export default function DashboardPage() {
           shark={selectedShark}
           pings={selectedPings}
           pingsLoading={pingsLoading}
-          isPremium={IS_PREMIUM_PREVIEW}
+          isPremium={isPremium}
           onClose={() => { setSelectedShark(null); setSelectedPings([]); }}
         />
 
