@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   X, Tag, MapPin, Ruler, Weight, Lock, Clock, BookOpen,
-  User, Layers, AlertCircle,
+  User, Layers, AlertCircle, Zap,
 } from "lucide-react";
 import type { Shark, SharkPing } from "@/data/sharks";
 import {
@@ -16,6 +16,7 @@ interface SharkDetailPanelProps {
   shark: Shark | null;
   pings: SharkPing[];
   pingsLoading: boolean;
+  isPremium?: boolean;
   onClose: () => void;
 }
 
@@ -89,14 +90,86 @@ function TrackPreview({ pings, color }: { pings: SharkPing[]; color: string }) {
   );
 }
 
+// ─── Track Overview paywall ───────────────────────────────────────────────────
+function LockedTrackOverview({ pings, color }: { pings: SharkPing[]; color: string }) {
+  const [loading, setLoading] = useState(false);
+
+  async function handleUpgrade() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkout_sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "pro" }),
+      });
+      const data = (await res.json()) as { url?: string };
+      if (data.url) window.location.href = data.url;
+    } catch { /* non-fatal */ } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div>
+      <div className="text-[9px] uppercase tracking-widest text-slate-600 font-mono mb-2">Track Overview</div>
+      <div className="relative rounded-xl overflow-hidden" style={{ background: "rgba(0,229,255,0.03)", border: "1px solid rgba(99,102,241,0.25)" }}>
+        {/* Blurred preview */}
+        <div className="blur-[3px] opacity-30 pointer-events-none select-none">
+          {pings.length >= 2 ? (
+            <TrackPreview pings={pings} color={color} />
+          ) : (
+            <svg viewBox="0 0 240 70" className="w-full h-16">
+              <path d="M10,35 Q60,20 120,30 Q180,40 230,25" fill="none" stroke={color} strokeWidth="1.5" strokeOpacity="0.4" strokeLinecap="round" />
+              <circle cx="230" cy="25" r="3" fill={color} />
+            </svg>
+          )}
+        </div>
+
+        {/* Lock overlay */}
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-xl"
+          style={{ background: "linear-gradient(135deg, rgba(5,13,26,0.7), rgba(10,17,40,0.6))" }}
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(99,102,241,0.2)", border: "1px solid rgba(99,102,241,0.4)" }}>
+              <Lock className="w-3.5 h-3.5 text-indigo-400" />
+            </div>
+            <div>
+              <p className="text-slate-100 text-[11px] font-bold leading-tight">Pro Feature</p>
+              <p className="text-slate-500 text-[9px]">Full route map · 3-day free trial</p>
+            </div>
+          </div>
+          <button
+            onClick={handleUpgrade}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-[1.04] active:scale-[0.97] disabled:opacity-60"
+            style={{
+              background: loading ? "rgba(0,229,255,0.1)" : "linear-gradient(135deg, #00e5ff, #14f5d8)",
+              color: loading ? "#00e5ff" : "#020810",
+              boxShadow: loading ? "none" : "0 2px 12px rgba(0,229,255,0.35)",
+              border: loading ? "1px solid rgba(0,229,255,0.3)" : "none",
+            }}
+          >
+            {loading
+              ? <div className="w-3 h-3 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+              : <Zap className="w-3 h-3" />}
+            <span>{loading ? "Loading…" : "Unlock Pro"}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Shared panel body ────────────────────────────────────────────────────────
 function PanelBody({
-  shark, pings, pingsLoading, onClose,
+  shark, pings, pingsLoading, isPremium = false, onClose,
   showDragHandle = false, imageHeight = 192,
 }: {
   shark: Shark;
   pings: SharkPing[];
   pingsLoading: boolean;
+  isPremium?: boolean;
   onClose: () => void;
   showDragHandle?: boolean;
   imageHeight?: number;
@@ -220,7 +293,11 @@ function PanelBody({
           </div>
         )}
 
-        {!pingsLoading && pings.length > 0 && <TrackPreview pings={pings} color={color} />}
+        {!pingsLoading && (
+          isPremium
+            ? pings.length > 0 && <TrackPreview pings={pings} color={color} />
+            : <LockedTrackOverview pings={pings} color={color} />
+        )}
 
         {/* Ping history */}
         {!pingsLoading && pings.length > 0 && (
@@ -262,7 +339,7 @@ function PanelBody({
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-export default function SharkDetailPanel({ shark, pings, pingsLoading, onClose }: SharkDetailPanelProps) {
+export default function SharkDetailPanel({ shark, pings, pingsLoading, isPremium = false, onClose }: SharkDetailPanelProps) {
   const isVisible = shark !== null;
 
   const [frozenShark, setFrozenShark] = useState<Shark | null>(null);
@@ -290,7 +367,7 @@ export default function SharkDetailPanel({ shark, pings, pingsLoading, onClose }
         style={{ width: "360px", transform: isVisible ? "translateX(0)" : "translateX(calc(100% + 32px))", opacity: isVisible ? 1 : 0, pointerEvents: isVisible ? "auto" : "none" }}
       >
         <div className="glass h-full rounded-2xl overflow-hidden">
-          {activeShark && <PanelBody shark={activeShark} pings={activePings} pingsLoading={pingsLoading} onClose={onClose} />}
+          {activeShark && <PanelBody shark={activeShark} pings={activePings} pingsLoading={pingsLoading} isPremium={isPremium} onClose={onClose} />}
         </div>
       </div>
 
@@ -315,7 +392,7 @@ export default function SharkDetailPanel({ shark, pings, pingsLoading, onClose }
         }}
       >
         {activeShark && (
-          <PanelBody shark={activeShark} pings={activePings} pingsLoading={pingsLoading} onClose={onClose} showDragHandle imageHeight={140} />
+          <PanelBody shark={activeShark} pings={activePings} pingsLoading={pingsLoading} isPremium={isPremium} onClose={onClose} showDragHandle imageHeight={140} />
         )}
       </div>
     </>

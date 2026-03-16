@@ -111,12 +111,13 @@ export default function DashboardPage() {
       />
 
       {/* ── Detail panel ── */}
-      <SharkDetailPanel
-        shark={selectedShark}
-        pings={selectedPings}
-        pingsLoading={pingsLoading}
-        onClose={() => { setSelectedShark(null); setSelectedPings([]); }}
-      />
+        <SharkDetailPanel
+          shark={selectedShark}
+          pings={selectedPings}
+          pingsLoading={pingsLoading}
+          isPremium={IS_PREMIUM_PREVIEW}
+          onClose={() => { setSelectedShark(null); setSelectedPings([]); }}
+        />
 
       {/* ── Top-right auth + CTA ── */}
       <TopBar />
