@@ -5,6 +5,8 @@ import { X, Search, Heart, Sparkles, ChevronRight, MapPin } from "lucide-react";
 import type { Shark } from "@/data/sharks";
 import { SHARK_STATUS_CONFIG, getTimeSinceLastPing } from "@/data/sharks";
 
+const ADOPT_LINK = process.env.NEXT_PUBLIC_STRIPE_ADOPT_LINK ?? "https://buy.stripe.com/5kQfZh3iebx4aU567G9Ve02";
+
 interface Props {
   onClose: () => void;
 }
@@ -15,7 +17,6 @@ export default function AdoptSharkModal({ onClose }: Props) {
   const [query, setQuery]             = useState("");
   const [selected, setSelected]       = useState<Shark | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [checkoutError, setCheckoutError]     = useState("");
 
   useEffect(() => {
     fetch("/api/sharks")
@@ -36,32 +37,10 @@ export default function AdoptSharkModal({ onClose }: Props) {
     );
   }, [sharks, query]);
 
-  async function handleAdopt() {
+  function handleAdopt() {
     if (!selected) return;
     setCheckoutLoading(true);
-    setCheckoutError("");
-    try {
-      const res = await fetch("/api/checkout_sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "adopt",
-          sharkId: selected.id,
-          sharkName: selected.name,
-          sharkSpecies: selected.commonName,
-        }),
-      });
-      const data = (await res.json()) as { url?: string; error?: string };
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setCheckoutError(data.error ?? "Something went wrong.");
-        setCheckoutLoading(false);
-      }
-    } catch {
-      setCheckoutError("Network error — please try again.");
-      setCheckoutLoading(false);
-    }
+    window.location.href = ADOPT_LINK;
   }
 
   return (
@@ -157,10 +136,6 @@ export default function AdoptSharkModal({ onClose }: Props) {
                 <p className="text-[10px] text-slate-600 font-mono">per month</p>
               </div>
             </div>
-
-            {checkoutError && (
-              <p className="text-[11px] text-red-400 text-center px-2">{checkoutError}</p>
-            )}
 
             <button
               onClick={handleAdopt}
