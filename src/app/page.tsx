@@ -18,7 +18,12 @@ export default function DashboardPage() {
   const [selectedShark, setSelectedShark] = useState<Shark | null>(null);
   const [selectedPings, setSelectedPings] = useState<SharkPing[]>([]);
   const [pingsLoading, setPingsLoading]   = useState(false);
+  const [activeOnly, setActiveOnly]       = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const displayedSharks = activeOnly
+    ? sharks.filter((s) => s.status === "active")
+    : sharks;
 
   // Fetch all sharks on mount
   useEffect(() => {
@@ -65,7 +70,7 @@ export default function DashboardPage() {
       {/* ── Map ── */}
       <div className="absolute inset-0 z-0">
         <DynamicMap
-          sharks={sharks}
+          sharks={displayedSharks}
           selectedShark={selectedShark}
           onSharkSelect={handleSharkSelect}
         />
@@ -92,12 +97,15 @@ export default function DashboardPage() {
 
       {/* ── Sidebar ── */}
       <Sidebar
-        sharks={sharks}
+        sharks={displayedSharks}
+        allSharksCount={sharks.length}
         loading={loading}
         error={error}
         selectedShark={selectedShark}
         onSharkSelect={handleSharkSelect}
         isPremium={IS_PREMIUM_PREVIEW}
+        activeOnly={activeOnly}
+        onActiveOnlyChange={setActiveOnly}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
       />
@@ -114,22 +122,20 @@ export default function DashboardPage() {
       <TopBar />
 
       {/* ── Bottom status bar ── */}
-      <BottomStatusBar selectedShark={selectedShark} total={sharks.length} loading={loading} />
+      <BottomStatusBar selectedShark={selectedShark} displayed={displayedSharks.length} total={sharks.length} loading={loading} activeOnly={activeOnly} />
     </main>
   );
 }
 
 function BottomStatusBar({
-  selectedShark,
-  total,
-  loading,
+  selectedShark, displayed, total, loading, activeOnly,
 }: {
   selectedShark: Shark | null;
+  displayed: number;
   total: number;
   loading: boolean;
+  activeOnly: boolean;
 }) {
-  const activeCount = total; // shown as "N tracked"
-
   return (
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-[calc(100%-2rem)] max-w-md">
       <div className="glass flex items-center gap-3 px-4 py-2.5 rounded-full">
@@ -154,17 +160,13 @@ function BottomStatusBar({
           <>
             <div className="w-2 h-2 rounded-full bg-teal-400 animate-pulse flex-shrink-0" />
             {loading ? (
-              <span className="text-xs font-mono text-slate-500">Loading OCEARCH data…</span>
+              <span className="text-xs font-mono text-slate-500">Loading live data…</span>
             ) : (
-              <>
-                <span className="text-xs font-mono text-slate-500">
-                  {activeCount} sharks tracked
-                </span>
-                <span className="text-xs font-mono text-slate-600 hidden sm:inline">·</span>
-                <span className="text-xs font-mono text-slate-600 hidden sm:inline">
-                  Select a shark to track
-                </span>
-              </>
+              <span className="text-xs font-mono text-slate-500">
+                {activeOnly
+                  ? `${displayed} active shark${displayed !== 1 ? "s" : ""} of ${total} total`
+                  : `${total} sharks tracked · select one to focus`}
+              </span>
             )}
           </>
         )}

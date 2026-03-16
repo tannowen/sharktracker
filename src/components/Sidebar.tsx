@@ -20,11 +20,14 @@ const MOCK_ROUTES = [
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface SidebarProps {
   sharks: Shark[];
+  allSharksCount?: number;
   loading?: boolean;
   error?: string | null;
   selectedShark: Shark | null;
   onSharkSelect: (shark: Shark) => void;
   isPremium?: boolean;
+  activeOnly?: boolean;
+  onActiveOnlyChange?: (v: boolean) => void;
   mobileOpen?: boolean;
   onMobileClose?: () => void;
 }
@@ -205,15 +208,19 @@ function HistoricalRoutesSection({ isPremium }: { isPremium: boolean }) {
 
 // ─── Core sidebar body ────────────────────────────────────────────────────────
 function SidebarContent({
-  sharks, loading, error, selectedShark, onSharkSelect, isPremium,
+  sharks, allSharksCount, loading, error, selectedShark, onSharkSelect, isPremium,
+  activeOnly, onActiveOnlyChange,
   isCollapsed, setIsCollapsed, isMobileDrawer = false, onClose,
 }: {
   sharks: Shark[];
+  allSharksCount?: number;
   loading?: boolean;
   error?: string | null;
   selectedShark: Shark | null;
   onSharkSelect: (s: Shark) => void;
   isPremium: boolean;
+  activeOnly?: boolean;
+  onActiveOnlyChange?: (v: boolean) => void;
   isCollapsed: boolean;
   setIsCollapsed: (v: boolean) => void;
   isMobileDrawer?: boolean;
@@ -239,6 +246,8 @@ function SidebarContent({
 
   const activeCount  = sharks.filter((s) => s.status === "active").length;
   const restingCount = sharks.filter((s) => s.status === "resting").length;
+  // Always show totals relative to the unfiltered dataset when possible
+  const totalTagged = activeOnly ? (allSharksCount ?? sharks.length) : sharks.length;
 
   return (
     <>
@@ -256,7 +265,7 @@ function SidebarContent({
                 <h1 className="text-base font-bold tracking-tight truncate" style={{ background: "linear-gradient(90deg, #00e5ff, #14f5d8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   ApexTracker
                 </h1>
-                <p className="text-[10px] text-slate-600 uppercase tracking-widest font-mono">OCEARCH Live Data</p>
+                <p className="text-[10px] text-slate-600 uppercase tracking-widest font-mono">Live Tracking</p>
               </div>
               {isMobileDrawer ? (
                 <button onClick={onClose} className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-200 hover:bg-white/8 transition-colors">
@@ -285,7 +294,7 @@ function SidebarContent({
           <div className="mx-4 mb-3 rounded-xl px-4 py-3 grid grid-cols-3 gap-2" style={{ background: "rgba(0,229,255,0.04)", border: "1px solid rgba(0,229,255,0.08)" }}>
             <div className="text-center">
               <div className={`text-lg font-bold font-mono text-cyan-400 leading-tight ${loading ? "animate-pulse" : ""}`}>
-                {loading ? "—" : sharks.length}
+                {loading ? "—" : totalTagged}
               </div>
               <div className="text-[9px] uppercase tracking-wider text-slate-600">Tagged</div>
             </div>
@@ -333,10 +342,31 @@ function SidebarContent({
                 Tracked Individuals
               </span>
               {!loading && query && (
-                <span className="text-[9px] font-mono text-slate-700">
-                  {visibleSharks.length} result{visibleSharks.length !== 1 ? "s" : ""}
+                <span className="text-[9px] font-mono text-slate-700 mr-1">
+                  {visibleSharks.length}
                 </span>
               )}
+              {/* Active-only toggle */}
+              <button
+                onClick={() => onActiveOnlyChange?.(!activeOnly)}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-mono transition-all duration-200"
+                style={activeOnly ? {
+                  background: "rgba(0,229,255,0.15)",
+                  border: "1px solid rgba(0,229,255,0.35)",
+                  color: "#00e5ff",
+                } : {
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "#475569",
+                }}
+                title={activeOnly ? `Showing ${sharks.length} active · click to show all` : `Showing all ${allSharksCount ?? sharks.length} · click to filter active`}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ background: activeOnly ? "#00e5ff" : "#475569", boxShadow: activeOnly ? "0 0 4px #00e5ff" : "none" }}
+                />
+                {activeOnly ? "Active" : "All"}
+              </button>
             </div>
 
             <div className="px-3 space-y-2 mb-4">
@@ -386,7 +416,7 @@ function SidebarContent({
           <div className="flex-shrink-0 mx-4 mb-4 mt-1 rounded-xl p-3 flex items-center gap-2" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
             <Wifi className="w-3.5 h-3.5 text-teal-400 flex-shrink-0" />
             <div className="min-w-0">
-              <p className="text-[10px] font-mono text-teal-400">OCEARCH Live Feed</p>
+              <p className="text-[10px] font-mono text-teal-400">Live Feed</p>
               <p className="text-[9px] text-slate-600 truncate">Data via Mapotic · 15 min cache</p>
             </div>
             <div className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: loading ? "#64748b" : "#2dd4bf", boxShadow: loading ? "none" : "0 0 6px #2dd4bf" }} />
@@ -427,11 +457,12 @@ function SidebarContent({
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 export default function Sidebar({
-  sharks, loading, error, selectedShark, onSharkSelect,
-  isPremium = false, mobileOpen = false, onMobileClose,
+  sharks, allSharksCount, loading, error, selectedShark, onSharkSelect,
+  isPremium = false, activeOnly = false, onActiveOnlyChange,
+  mobileOpen = false, onMobileClose,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const shared = { sharks, loading, error, selectedShark, onSharkSelect, isPremium };
+  const shared = { sharks, allSharksCount, loading, error, selectedShark, onSharkSelect, isPremium, activeOnly, onActiveOnlyChange };
 
   return (
     <>
