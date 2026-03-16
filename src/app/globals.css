@@ -179,8 +179,34 @@ body {
   color: #94a3b8 !important;
   border-color: var(--glass-border) !important;
   backdrop-filter: blur(10px) !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
 }
 .leaflet-control-zoom a:hover {
   background: rgba(0, 229, 255, 0.15) !important;
   color: #00e5ff !important;
+}
+
+/* Mobile: push Leaflet controls above the bottom status bar */
+@media (max-width: 767px) {
+  .leaflet-bottom.leaflet-left {
+    bottom: 72px !important;
+  }
+  .leaflet-control-zoom a {
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 16px !important;
+  }
+}
+
+/* Improve tap targets throughout on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  button {
+    min-height: 40px;
+  }
+  .leaflet-container {
+    touch-action: pan-x pan-y;
+  }
 }
