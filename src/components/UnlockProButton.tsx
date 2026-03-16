@@ -20,7 +20,11 @@ export default function UnlockProButton({ fullWidth = false }: { fullWidth?: boo
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/checkout_sessions", { method: "POST" });
+      const res = await fetch("/api/checkout_sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "pro" }),
+      });
       const data = (await res.json()) as {
         url?: string;
         error?: string;

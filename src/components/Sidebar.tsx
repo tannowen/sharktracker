@@ -255,10 +255,17 @@ function SidebarContent({
       <div className="flex-shrink-0 p-4">
         <div className={`flex items-center gap-3 ${isCollapsed && !isMobileDrawer ? "justify-center" : ""}`}>
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 relative" style={{ background: "linear-gradient(135deg, #00e5ff20, #00e5ff10)", border: "1px solid rgba(0,229,255,0.3)" }}>
-            {/* Shark SVG icon */}
+            {/* Shark-on-globe logo */}
             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" style={{ color: "#00e5ff" }}>
-              <path d="M2 12 C4 7, 9 5, 13 7 L20 4 L17 9 C19 10, 20 12, 19 14 C17 18, 11 18, 8 16 L5 19 L6 14 C4 13, 2 13, 2 12Z" fill="currentColor" fillOpacity="0.9"/>
-              <circle cx="15" cy="9.5" r="0.8" fill="rgba(2,8,16,0.8)"/>
+              {/* Globe */}
+              <circle cx="12" cy="14" r="7.5" stroke="currentColor" strokeWidth="1" strokeOpacity="0.5" fill="none" />
+              <ellipse cx="12" cy="14" rx="3.5" ry="7.5" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.35" fill="none" />
+              <path d="M4.5 14 Q12 11.5 19.5 14" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.35" fill="none" />
+              <path d="M5.5 18 Q12 15.5 18.5 18" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.35" fill="none" />
+              <path d="M5.5 10 Q12 7.5 18.5 10" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.35" fill="none" />
+              {/* Shark leaping over the globe */}
+              <path d="M4 8.5 C6 5, 10 3.5, 13 5.5 L19.5 2.5 L17 7.5 C18.5 8.5 19 10.5 17.5 12 C15.5 14 11 13 8.5 11 L5.5 13 L7 9 Z" fill="currentColor" fillOpacity="0.95" />
+              <circle cx="13.5" cy="6.5" r="0.7" fill="rgba(2,8,16,0.85)" />
             </svg>
             <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400 animate-pulse" style={{ animationDuration: "1.5s" }} />
           </div>
