@@ -48,6 +48,27 @@ export default function DashboardPage() {
       .catch(() => setIsPremium(false));
   }, [isSignedIn]);
 
+  // On landing from Stripe success redirect, verify the session and unlock immediately
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+    const isUpgrade = params.get("upgrade") === "success";
+    if (!sessionId || !isUpgrade) return;
+
+    fetch(`/api/verify-session?session_id=${sessionId}`)
+      .then((r) => r.json())
+      .then((d: { isPremium?: boolean }) => {
+        if (d.isPremium) setIsPremium(true);
+      })
+      .catch(() => {});
+
+    // Clean up URL without reloading
+    const clean = new URL(window.location.href);
+    clean.searchParams.delete("session_id");
+    clean.searchParams.delete("upgrade");
+    window.history.replaceState({}, "", clean.toString());
+  }, []);
+
   // Lazy-load pings when a shark is selected
   const loadPings = useCallback(async (shark: Shark) => {
     setPingsLoading(true);
