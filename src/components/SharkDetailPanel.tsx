@@ -91,22 +91,11 @@ function TrackPreview({ pings, color }: { pings: SharkPing[]; color: string }) {
 }
 
 // ─── Track Overview paywall ───────────────────────────────────────────────────
-function LockedTrackOverview({ pings, color }: { pings: SharkPing[]; color: string }) {
-  const [loading, setLoading] = useState(false);
+const PRO_LINK = process.env.NEXT_PUBLIC_STRIPE_PRO_LINK ?? "https://buy.stripe.com/fZueVd8CyfNkgepdA89Ve01";
 
-  async function handleUpgrade() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/checkout_sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "pro" }),
-      });
-      const data = (await res.json()) as { url?: string };
-      if (data.url) window.location.href = data.url;
-    } catch { /* non-fatal */ } finally {
-      setLoading(false);
-    }
+function LockedTrackOverview({ pings, color }: { pings: SharkPing[]; color: string }) {
+  function handleUpgrade() {
+    window.location.href = PRO_LINK;
   }
 
   return (
@@ -141,19 +130,15 @@ function LockedTrackOverview({ pings, color }: { pings: SharkPing[]; color: stri
           </div>
           <button
             onClick={handleUpgrade}
-            disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-[1.04] active:scale-[0.97] disabled:opacity-60"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-[1.04] active:scale-[0.97]"
             style={{
-              background: loading ? "rgba(0,229,255,0.1)" : "linear-gradient(135deg, #00e5ff, #14f5d8)",
-              color: loading ? "#00e5ff" : "#020810",
-              boxShadow: loading ? "none" : "0 2px 12px rgba(0,229,255,0.35)",
-              border: loading ? "1px solid rgba(0,229,255,0.3)" : "none",
+              background: "linear-gradient(135deg, #00e5ff, #14f5d8)",
+              color: "#020810",
+              boxShadow: "0 2px 12px rgba(0,229,255,0.35)",
             }}
           >
-            {loading
-              ? <div className="w-3 h-3 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
-              : <Zap className="w-3 h-3" />}
-            <span>{loading ? "Loading…" : "Unlock Pro"}</span>
+            <Zap className="w-3 h-3" />
+            <span>Unlock Pro</span>
           </button>
         </div>
       </div>

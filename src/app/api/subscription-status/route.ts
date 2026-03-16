@@ -39,9 +39,11 @@ export async function GET() {
 
     const isPremium = subscriptions.data.some((sub) => {
       if (sub.status !== "active" && sub.status !== "trialing") return false;
-      // Metadata set on subscription (new checkouts)
+      // Check metadata (set on subscriptions created via our API)
       if (sub.metadata?.type === "pro") return true;
-      // Fallback: check product name (catches existing subscriptions)
+      // Check by price amount — Pro is $9.99/mo (999 cents), Adopt is $2.99 (299 cents)
+      if (sub.items.data.some((item) => (item.price.unit_amount ?? 0) >= 999)) return true;
+      // Check product name as final fallback
       return sub.items.data.some((item) => {
         const product = item.price.product;
         if (typeof product === "object" && product !== null && "name" in product) {
