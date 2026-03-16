@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Menu } from "lucide-react";
-import { MOCK_SHARKS, type Shark } from "@/data/sharks";
+import type { Shark, SharkPing } from "@/data/sharks";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import DynamicMap from "@/components/DynamicMap";
@@ -12,20 +12,60 @@ import SharkDetailPanel from "@/components/SharkDetailPanel";
 const IS_PREMIUM_PREVIEW = false;
 
 export default function DashboardPage() {
+  const [sharks, setSharks]               = useState<Shark[]>([]);
+  const [loading, setLoading]             = useState(true);
+  const [error, setError]                 = useState<string | null>(null);
   const [selectedShark, setSelectedShark] = useState<Shark | null>(null);
+  const [selectedPings, setSelectedPings] = useState<SharkPing[]>([]);
+  const [pingsLoading, setPingsLoading]   = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
+  // Fetch all sharks on mount
+  useEffect(() => {
+    fetch("/api/sharks")
+      .then((r) => r.json())
+      .then((data: { sharks?: Shark[]; error?: string }) => {
+        if (data.error) throw new Error(data.error);
+        setSharks(data.sharks ?? []);
+      })
+      .catch((e: unknown) =>
+        setError(e instanceof Error ? e.message : "Failed to load sharks")
+      )
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Lazy-load pings when a shark is selected
+  const loadPings = useCallback(async (shark: Shark) => {
+    setPingsLoading(true);
+    setSelectedPings([]);
+    try {
+      const r = await fetch(`/api/sharks/${shark.id}/pings`);
+      const data = (await r.json()) as { pings?: SharkPing[]; error?: string };
+      setSelectedPings(data.pings ?? []);
+    } catch {
+      // Pings failing is non-fatal — the panel still shows basic info
+    } finally {
+      setPingsLoading(false);
+    }
+  }, []);
+
   function handleSharkSelect(shark: Shark) {
-    setSelectedShark((prev) => (prev?.id === shark.id ? null : shark));
+    if (selectedShark?.id === shark.id) {
+      setSelectedShark(null);
+      setSelectedPings([]);
+      return;
+    }
+    setSelectedShark(shark);
+    void loadPings(shark);
   }
 
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-ocean-900">
 
-      {/* ── Map base layer ── */}
+      {/* ── Map ── */}
       <div className="absolute inset-0 z-0">
         <DynamicMap
-          sharks={MOCK_SHARKS}
+          sharks={sharks}
           selectedShark={selectedShark}
           onSharkSelect={handleSharkSelect}
         />
@@ -36,14 +76,12 @@ export default function DashboardPage() {
         className="absolute inset-0 z-10 pointer-events-none"
         style={{ background: "radial-gradient(ellipse at center, transparent 40%, rgba(2,8,16,0.55) 100%)" }}
       />
-
-      {/* ── Top edge fade ── */}
       <div
         className="absolute top-0 left-0 right-0 h-24 z-10 pointer-events-none"
         style={{ background: "linear-gradient(to bottom, rgba(2,8,16,0.4) 0%, transparent 100%)" }}
       />
 
-      {/* ── Mobile hamburger FAB — hidden on md+ (sidebar always visible there) ── */}
+      {/* ── Mobile hamburger FAB ── */}
       <button
         className="md:hidden absolute top-3 left-3 z-30 glass w-11 h-11 rounded-xl flex items-center justify-center transition-all active:scale-95"
         onClick={() => setMobileSidebarOpen(true)}
@@ -52,9 +90,11 @@ export default function DashboardPage() {
         <Menu className="w-5 h-5 text-slate-300" />
       </button>
 
-      {/* ── Sidebar (desktop: left panel / mobile: slide drawer) ── */}
+      {/* ── Sidebar ── */}
       <Sidebar
-        sharks={MOCK_SHARKS}
+        sharks={sharks}
+        loading={loading}
+        error={error}
         selectedShark={selectedShark}
         onSharkSelect={handleSharkSelect}
         isPremium={IS_PREMIUM_PREVIEW}
@@ -62,29 +102,37 @@ export default function DashboardPage() {
         onMobileClose={() => setMobileSidebarOpen(false)}
       />
 
-      {/* ── Shark detail panel (desktop: right panel / mobile: bottom sheet) ── */}
+      {/* ── Detail panel ── */}
       <SharkDetailPanel
         shark={selectedShark}
-        onClose={() => setSelectedShark(null)}
+        pings={selectedPings}
+        pingsLoading={pingsLoading}
+        onClose={() => { setSelectedShark(null); setSelectedPings([]); }}
       />
 
       {/* ── Top-right auth + CTA ── */}
       <TopBar />
 
       {/* ── Bottom status bar ── */}
-      <BottomStatusBar selectedShark={selectedShark} />
+      <BottomStatusBar selectedShark={selectedShark} total={sharks.length} loading={loading} />
     </main>
   );
 }
 
-function BottomStatusBar({ selectedShark }: { selectedShark: Shark | null }) {
-  const activeCount = MOCK_SHARKS.filter((s) => s.status === "active").length;
+function BottomStatusBar({
+  selectedShark,
+  total,
+  loading,
+}: {
+  selectedShark: Shark | null;
+  total: number;
+  loading: boolean;
+}) {
+  const activeCount = total; // shown as "N tracked"
 
   return (
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-[calc(100%-2rem)] max-w-md">
-      <div
-        className="glass flex items-center gap-3 px-4 py-2.5 rounded-full"
-      >
+      <div className="glass flex items-center gap-3 px-4 py-2.5 rounded-full">
         {selectedShark ? (
           <>
             <div
@@ -98,23 +146,26 @@ function BottomStatusBar({ selectedShark }: { selectedShark: Shark | null }) {
               </span>
               <span className="hidden sm:inline text-slate-600"> · {selectedShark.commonName}</span>
             </span>
-            <span className="text-xs font-mono text-slate-600 hidden sm:inline flex-shrink-0">
-              · {selectedShark.lastPing.lat.toFixed(1)}°, {selectedShark.lastPing.lng.toFixed(1)}°
-            </span>
             <span className="text-xs font-mono text-slate-600 flex-shrink-0 ml-auto">
-              {selectedShark.lastPing.depth}m
+              {selectedShark.lastPing.lat.toFixed(1)}°, {selectedShark.lastPing.lng.toFixed(1)}°
             </span>
           </>
         ) : (
           <>
             <div className="w-2 h-2 rounded-full bg-teal-400 animate-pulse flex-shrink-0" />
-            <span className="text-xs font-mono text-slate-500">
-              {activeCount}/{MOCK_SHARKS.length} active
-            </span>
-            <span className="text-xs font-mono text-slate-600 hidden sm:inline">·</span>
-            <span className="text-xs font-mono text-slate-600 hidden sm:inline">
-              Select a shark to track
-            </span>
+            {loading ? (
+              <span className="text-xs font-mono text-slate-500">Loading OCEARCH data…</span>
+            ) : (
+              <>
+                <span className="text-xs font-mono text-slate-500">
+                  {activeCount} sharks tracked
+                </span>
+                <span className="text-xs font-mono text-slate-600 hidden sm:inline">·</span>
+                <span className="text-xs font-mono text-slate-600 hidden sm:inline">
+                  Select a shark to track
+                </span>
+              </>
+            )}
           </>
         )}
       </div>

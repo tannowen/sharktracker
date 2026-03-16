@@ -168,27 +168,27 @@ export default function MapComponent({
                   }}
                 >
                   <div>
-                    <div style={{ color: "#475569", fontSize: "10px" }}>DEPTH</div>
-                    <div style={{ color: "#94a3b8", fontFamily: "monospace" }}>
-                      {shark.lastPing.depth}m
-                    </div>
-                  </div>
-                  <div>
                     <div style={{ color: "#475569", fontSize: "10px" }}>LAST PING</div>
                     <div style={{ color: "#94a3b8", fontFamily: "monospace" }}>
                       {getTimeSinceLastPing(shark.lastPing.timestamp)}
                     </div>
                   </div>
                   <div>
-                    <div style={{ color: "#475569", fontSize: "10px" }}>LENGTH</div>
-                    <div style={{ color: "#94a3b8", fontFamily: "monospace" }}>
-                      {shark.lengthM}m
+                    <div style={{ color: "#475569", fontSize: "10px" }}>REGION</div>
+                    <div style={{ color: "#94a3b8", fontFamily: "monospace", fontSize: "11px" }}>
+                      {shark.region}
                     </div>
                   </div>
                   <div>
-                    <div style={{ color: "#475569", fontSize: "10px" }}>TAG ID</div>
+                    <div style={{ color: "#475569", fontSize: "10px" }}>LENGTH</div>
+                    <div style={{ color: "#94a3b8", fontFamily: "monospace" }}>
+                      {shark.lengthM ? `${shark.lengthM}m` : "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ color: "#475569", fontSize: "10px" }}>STAGE</div>
                     <div style={{ color: color, fontFamily: "monospace", fontSize: "11px" }}>
-                      {shark.tagId}
+                      {shark.stageOfLife || "—"}
                     </div>
                   </div>
                 </div>

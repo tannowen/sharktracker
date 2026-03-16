@@ -2,19 +2,10 @@
 
 import { useEffect, useState } from "react";
 import {
-  X,
-  Tag,
-  MapPin,
-  Ruler,
-  Weight,
-  Zap,
-  Calendar,
-  Anchor,
-  Lock,
-  Clock,
-  BookOpen,
+  X, Tag, MapPin, Ruler, Weight, Lock, Clock, BookOpen,
+  User, Layers, AlertCircle,
 } from "lucide-react";
-import type { Shark } from "@/data/sharks";
+import type { Shark, SharkPing } from "@/data/sharks";
 import {
   getTimeSinceLastPing,
   getStatusGlowColor,
@@ -23,38 +14,17 @@ import {
 
 interface SharkDetailPanelProps {
   shark: Shark | null;
+  pings: SharkPing[];
+  pingsLoading: boolean;
   onClose: () => void;
 }
 
-// ─── Depth gauge ──────────────────────────────────────────────────────────────
-function DepthGauge({ depth, color }: { depth: number; color: string }) {
-  const pct = Math.min((depth / 600) * 100, 96);
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[9px] uppercase tracking-widest text-slate-600 font-mono">Current Depth</span>
-        <span className="text-xs font-mono font-bold" style={{ color }}>{depth}m</span>
-      </div>
-      <div className="relative h-3 rounded-full overflow-visible">
-        <div className="h-full rounded-full" style={{ background: "linear-gradient(to right, #00e5ff 0%, #14f5d8 15%, #4d9fff 40%, #6366f1 70%, #1e1b4b 100%)" }} />
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white transition-all duration-1000"
-          style={{ left: `calc(${pct}% - 10px)`, backgroundColor: color, boxShadow: `0 0 10px ${color}, 0 0 20px ${color}60` }}
-        />
-      </div>
-      <div className="flex justify-between mt-2 text-[9px] font-mono text-slate-700">
-        <span>0m</span><span>150m</span><span>300m</span><span>450m</span><span>600m+</span>
-      </div>
-    </div>
-  );
-}
-
 // ─── Ping row ─────────────────────────────────────────────────────────────────
-function PingRow({ ping, isLatest, color }: { ping: Shark["pings"][number]; isLatest: boolean; color: string }) {
+function PingRow({ ping, isLatest, color }: { ping: SharkPing; isLatest: boolean; color: string }) {
   const latDir = ping.lat >= 0 ? "N" : "S";
   const lngDir = ping.lng >= 0 ? "E" : "W";
   const time = new Date(ping.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
-  const date = new Date(ping.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const date = new Date(ping.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" });
 
   return (
     <div
@@ -67,23 +37,66 @@ function PingRow({ ping, isLatest, color }: { ping: Shark["pings"][number]; isLa
       </div>
       <span className="text-slate-600 flex-shrink-0 w-10">{time}</span>
       <span className="text-slate-700 flex-shrink-0">{date}</span>
-      <span className="text-slate-500 flex-1">{Math.abs(ping.lat).toFixed(1)}°{latDir}, {Math.abs(ping.lng).toFixed(1)}°{lngDir}</span>
-      <span className="flex-shrink-0 flex items-center gap-1" style={{ color: isLatest ? color : "#475569" }}>
-        <Anchor className="w-2.5 h-2.5" />{ping.depth}m
+      <span className="text-slate-500 flex-1 truncate">
+        {Math.abs(ping.lat).toFixed(2)}°{latDir}, {Math.abs(ping.lng).toFixed(2)}°{lngDir}
       </span>
     </div>
   );
 }
 
+// ─── Mini track map (lat/lng scatter) ────────────────────────────────────────
+function TrackPreview({ pings, color }: { pings: SharkPing[]; color: string }) {
+  if (pings.length < 2) return null;
+
+  const lats = pings.map((p) => p.lat);
+  const lngs = pings.map((p) => p.lng);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+  const rangeLat = maxLat - minLat || 1;
+  const rangeLng = maxLng - minLng || 1;
+
+  const toX = (lng: number) => ((lng - minLng) / rangeLng) * 220 + 10;
+  const toY = (lat: number) => 60 - ((lat - minLat) / rangeLat) * 50 - 5;
+
+  const pathD = pings
+    .slice()
+    .reverse()
+    .map((p, i) => `${i === 0 ? "M" : "L"}${toX(p.lng).toFixed(1)},${toY(p.lat).toFixed(1)}`)
+    .join(" ");
+
+  return (
+    <div>
+      <div className="text-[9px] uppercase tracking-widest text-slate-600 font-mono mb-2">Track Overview</div>
+      <div className="rounded-xl overflow-hidden" style={{ background: "rgba(0,229,255,0.03)", border: "1px solid rgba(0,229,255,0.08)" }}>
+        <svg viewBox="0 0 240 70" className="w-full h-16">
+          <path d={pathD} fill="none" stroke={color} strokeWidth="1.5" strokeOpacity="0.5" strokeLinecap="round" strokeLinejoin="round" />
+          {pings.slice(0, 1).map((p, i) => (
+            <circle key={i} cx={toX(p.lng)} cy={toY(p.lat)} r="3" fill={color} style={{ filter: `drop-shadow(0 0 4px ${color})` }} />
+          ))}
+          {pings.slice(-1).map((p, i) => (
+            <circle key={i} cx={toX(p.lng)} cy={toY(p.lat)} r="2" fill="#475569" />
+          ))}
+        </svg>
+      </div>
+      <div className="flex justify-between mt-1 text-[9px] font-mono text-slate-700">
+        <span>{pings.length} pings</span>
+        <span>
+          {Math.abs(minLat).toFixed(1)}°{minLat >= 0 ? "N" : "S"} –{" "}
+          {Math.abs(maxLat).toFixed(1)}°{maxLat >= 0 ? "N" : "S"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Shared panel body ────────────────────────────────────────────────────────
-// Used by both the desktop right-panel and mobile bottom-sheet
 function PanelBody({
-  shark,
-  onClose,
-  showDragHandle = false,
-  imageHeight = 192,
+  shark, pings, pingsLoading, onClose,
+  showDragHandle = false, imageHeight = 192,
 }: {
   shark: Shark;
+  pings: SharkPing[];
+  pingsLoading: boolean;
   onClose: () => void;
   showDragHandle?: boolean;
   imageHeight?: number;
@@ -112,22 +125,21 @@ function PanelBody({
 
       {/* Photo header */}
       <div className="flex-shrink-0 relative overflow-hidden" style={{ height: imageHeight }}>
-        {!imgError && (
+        {!imgError && shark.imageUrl && (
           <img
             src={shark.imageUrl}
-            alt={shark.commonName}
+            alt={shark.name}
             className="w-full h-full object-cover transition-opacity duration-700"
             style={{ opacity: imgLoaded ? 1 : 0 }}
             onLoad={() => setImgLoaded(true)}
             onError={() => setImgError(true)}
           />
         )}
-        {/* Gradient fallback */}
+        {/* Gradient fallback / overlay */}
         <div
           className="absolute inset-0 transition-opacity duration-700"
           style={{ background: `radial-gradient(ellipse at 35% 40%, ${color}35, ${color}10, #020810)`, opacity: imgLoaded && !imgError ? 0 : 1 }}
         />
-        {/* Bottom fade */}
         <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(2,8,16,0.25) 0%, transparent 35%, rgba(5,13,26,0.85) 80%, rgba(5,13,26,1) 100%)" }} />
 
         {/* Close button */}
@@ -162,7 +174,7 @@ function PanelBody({
         {/* Meta strip */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-mono text-slate-500 pb-4 border-b" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
           <span className="flex items-center gap-1"><Tag className="w-2.5 h-2.5" />{shark.tagId}</span>
-          <span className="flex items-center gap-1">{shark.sex === "F" ? "♀ Female" : "♂ Male"}</span>
+          <span className="flex items-center gap-1"><User className="w-2.5 h-2.5" />{shark.sex === "F" ? "♀ Female" : shark.sex === "M" ? "♂ Male" : "Unknown sex"}</span>
           <span className="flex items-center gap-1"><MapPin className="w-2.5 h-2.5" />{shark.region}</span>
           <span className="flex items-center gap-1"><Clock className="w-2.5 h-2.5" />{getTimeSinceLastPing(shark.lastPing.timestamp)}</span>
         </div>
@@ -170,40 +182,64 @@ function PanelBody({
         {/* Stats grid 3×2 */}
         <div className="grid grid-cols-3 gap-px rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,0.03)" }}>
           {[
-            { label: "Length",    value: `${shark.lengthM}m`,                      Icon: Ruler    },
-            { label: "Weight",    value: `${shark.weightKg.toLocaleString()}kg`,    Icon: Weight   },
-            { label: "Depth Now", value: `${shark.lastPing.depth}m`,               Icon: Anchor   },
-            { label: "Age Est.",  value: `~${shark.estimatedAgeYears} yr`,         Icon: Calendar },
-            { label: "Top Speed", value: `${shark.topSpeedKmh} km/h`,              Icon: Zap      },
-            { label: "Species",   value: shark.commonName.split(" ").slice(-2).join(" "), Icon: BookOpen },
+            { label: "Length",    value: shark.lengthM  ? `${shark.lengthM}m`                   : "—", Icon: Ruler    },
+            { label: "Weight",    value: shark.weightKg ? `${shark.weightKg.toLocaleString()}kg` : "—", Icon: Weight   },
+            { label: "Sex",       value: shark.sex === "F" ? "Female" : shark.sex === "M" ? "Male" : "Unknown", Icon: User  },
+            { label: "Stage",     value: shark.stageOfLife || "—",                                   Icon: Layers   },
+            { label: "Tagged At", value: shark.region || "—",                                         Icon: MapPin   },
+            { label: "Species",   value: shark.commonName.split(" ").slice(-2).join(" "),             Icon: BookOpen },
           ].map(({ label, value, Icon }) => (
             <div key={label} className="flex flex-col items-center justify-center py-3.5 px-2" style={{ background: "rgba(5,13,26,0.7)" }}>
               <Icon className="w-3 h-3 mb-1 text-slate-700" />
               <div className="text-[9px] uppercase tracking-wider text-slate-600 mb-0.5 text-center">{label}</div>
-              <div className="text-xs font-mono font-bold text-center leading-tight" style={{ color }}>{value}</div>
+              <div className="text-xs font-mono font-bold text-center leading-tight truncate w-full text-center" style={{ color }}>{value}</div>
             </div>
           ))}
         </div>
 
-        {/* Depth gauge */}
-        <DepthGauge depth={shark.lastPing.depth} color={color} />
-
-        {/* Ping history */}
-        <div>
-          <div className="flex items-center justify-between mb-2.5">
-            <span className="text-[9px] uppercase tracking-widest text-slate-600 font-mono">Ping History</span>
-            <span className="text-[9px] font-mono text-slate-700">{shark.pings.length} recorded</span>
-          </div>
-          <div className="space-y-1.5">
-            {shark.pings.map((ping, i) => <PingRow key={i} ping={ping} isLatest={i === 0} color={color} />)}
+        {/* Last ping location */}
+        <div className="rounded-xl px-4 py-3.5 flex items-center gap-3" style={{ background: "rgba(0,229,255,0.04)", border: `1px solid ${color}18` }}>
+          <MapPin className="w-4 h-4 flex-shrink-0" style={{ color }} />
+          <div>
+            <div className="text-[9px] uppercase tracking-widest text-slate-600 font-mono mb-0.5">Last Known Position</div>
+            <p className="text-xs font-mono" style={{ color }}>
+              {Math.abs(shark.lastPing.lat).toFixed(4)}°{shark.lastPing.lat >= 0 ? "N" : "S"},{" "}
+              {Math.abs(shark.lastPing.lng).toFixed(4)}°{shark.lastPing.lng >= 0 ? "E" : "W"}
+            </p>
+            <p className="text-[10px] text-slate-600 mt-0.5">
+              {new Date(shark.lastPing.timestamp).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+            </p>
           </div>
         </div>
 
-        {/* Field notes */}
-        {shark.notes && (
-          <div className="rounded-xl px-4 py-3.5" style={{ background: `${color}07`, border: `1px solid ${color}18` }}>
-            <div className="text-[9px] uppercase tracking-widest text-slate-600 font-mono mb-2">Field Notes</div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">{shark.notes}</p>
+        {/* Track overview */}
+        {pingsLoading && (
+          <div className="rounded-xl p-4 flex items-center justify-center gap-2" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+            <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: color, borderTopColor: "transparent" }} />
+            <span className="text-[10px] font-mono text-slate-600">Loading ping history…</span>
+          </div>
+        )}
+
+        {!pingsLoading && pings.length > 0 && <TrackPreview pings={pings} color={color} />}
+
+        {/* Ping history */}
+        {!pingsLoading && pings.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-[9px] uppercase tracking-widest text-slate-600 font-mono">Ping History</span>
+              <span className="text-[9px] font-mono text-slate-700">{pings.length} recorded</span>
+            </div>
+            <div className="space-y-1.5 max-h-52 overflow-y-auto custom-scrollbar pr-0.5">
+              {pings.map((ping, i) => <PingRow key={i} ping={ping} isLatest={i === 0} color={color} />)}
+            </div>
+          </div>
+        )}
+
+        {/* No pings yet */}
+        {!pingsLoading && pings.length === 0 && (
+          <div className="rounded-xl p-4 flex items-center gap-2 text-[11px]" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+            <AlertCircle className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+            <span className="text-slate-600 font-mono">No ping history available for this shark.</span>
           </div>
         )}
 
@@ -211,7 +247,7 @@ function PanelBody({
         <div className="rounded-xl px-4 py-3.5 flex items-center justify-between" style={{ background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.18)" }}>
           <div>
             <p className="text-xs font-semibold text-slate-300">Full Migration History</p>
-            <p className="text-[10px] text-slate-600 mt-0.5">Route replay, depth timeline & heatmaps</p>
+            <p className="text-[10px] text-slate-600 mt-0.5">Route replay, timeline & heatmaps</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0 ml-3">
             <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md" style={{ background: "rgba(99,102,241,0.18)", border: "1px solid rgba(99,102,241,0.3)", color: "#818cf8" }}>PRO</span>
@@ -226,49 +262,44 @@ function PanelBody({
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-export default function SharkDetailPanel({ shark, onClose }: SharkDetailPanelProps) {
+export default function SharkDetailPanel({ shark, pings, pingsLoading, onClose }: SharkDetailPanelProps) {
   const isVisible = shark !== null;
 
-  // Freeze the last shark so the panel content doesn't disappear mid-animation
   const [frozenShark, setFrozenShark] = useState<Shark | null>(null);
+  const [frozenPings, setFrozenPings] = useState<SharkPing[]>([]);
+
   useEffect(() => {
-    if (shark) setFrozenShark(shark);
+    if (shark) {
+      setFrozenShark(shark);
+    }
   }, [shark]);
 
+  useEffect(() => {
+    if (pings.length > 0) setFrozenPings(pings);
+    else if (!shark) setFrozenPings([]);
+  }, [pings, shark]);
+
   const activeShark = shark ?? frozenShark;
+  const activePings = isVisible ? pings : frozenPings;
 
   return (
     <>
       {/* ════ DESKTOP: right slide panel (md+) ════ */}
       <div
         className="hidden md:block absolute right-4 top-4 bottom-20 z-20 transition-all duration-500 ease-out"
-        style={{
-          width: "360px",
-          transform: isVisible ? "translateX(0)" : "translateX(calc(100% + 32px))",
-          opacity: isVisible ? 1 : 0,
-          pointerEvents: isVisible ? "auto" : "none",
-        }}
+        style={{ width: "360px", transform: isVisible ? "translateX(0)" : "translateX(calc(100% + 32px))", opacity: isVisible ? 1 : 0, pointerEvents: isVisible ? "auto" : "none" }}
       >
         <div className="glass h-full rounded-2xl overflow-hidden">
-          {activeShark && <PanelBody shark={activeShark} onClose={onClose} />}
+          {activeShark && <PanelBody shark={activeShark} pings={activePings} pingsLoading={pingsLoading} onClose={onClose} />}
         </div>
       </div>
 
       {/* ════ MOBILE: bottom sheet (<md) ════ */}
-
-      {/* Mobile backdrop */}
       <div
         className="md:hidden fixed inset-0 z-40 transition-all duration-500"
-        style={{
-          background: "rgba(2,8,16,0.6)",
-          backdropFilter: "blur(3px)",
-          opacity: isVisible ? 1 : 0,
-          pointerEvents: isVisible ? "auto" : "none",
-        }}
+        style={{ background: "rgba(2,8,16,0.6)", backdropFilter: "blur(3px)", opacity: isVisible ? 1 : 0, pointerEvents: isVisible ? "auto" : "none" }}
         onClick={onClose}
       />
-
-      {/* Bottom sheet */}
       <div
         className="md:hidden fixed bottom-0 left-0 right-0 z-50 transition-all duration-500 ease-out"
         style={{
@@ -284,12 +315,7 @@ export default function SharkDetailPanel({ shark, onClose }: SharkDetailPanelPro
         }}
       >
         {activeShark && (
-          <PanelBody
-            shark={activeShark}
-            onClose={onClose}
-            showDragHandle
-            imageHeight={140}
-          />
+          <PanelBody shark={activeShark} pings={activePings} pingsLoading={pingsLoading} onClose={onClose} showDragHandle imageHeight={140} />
         )}
       </div>
     </>
